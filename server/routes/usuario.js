@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+//encriptaremos el password de nuestros usuarios antes de realizar el POST
+const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
 
 
@@ -18,13 +20,13 @@ app.get('/usuarios', (req, res) => {
 
 app.post('/usuarios', (req, res) => {
 
-    let body = req.body;
+    let { nombre, email, password, role } = req.body;
 
     let usuario = new Usuario({
-        nombre: body.nombre,
-        email: body.email,
-        password: body.password,
-        role: body.role
+        nombre,
+        email,
+        password: bcrypt.hashSync(password, 10),
+        role
     });
 
     usuario.save((err, usuarioDB) => {
