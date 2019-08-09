@@ -18,10 +18,11 @@ app.get('/usuarios', (req, res) => {
     let desde = Number(req.query.desde) || 0;
     let limite = Number(req.query.limite) || 5;
     //Podemos indicar condiciones en el find {google: true}
-    Usuario.find({})
+    Usuario.find({ state: true }, 'nombre email')
         .skip(desde)
         .limit(limite)
         .exec((err, usuarios) => {
+
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -29,10 +30,16 @@ app.get('/usuarios', (req, res) => {
                 });
             }
 
-            res.json({
-                ok: true,
-                usuarios
-            });
+            Usuario.count({ state: true }, (err, count) => {
+
+                res.json({
+                    ok: true,
+                    usuarios,
+                    count
+                });
+            })
+
+
         })
 });
 
@@ -80,7 +87,7 @@ app.put('/usuarios/:id', (req, res) => {
     Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, usuarioDB) => {
 
         if (err) {
-            res.status(400).json({
+            return res.status(400).json({
                 ok: false,
                 err
             });
@@ -98,10 +105,33 @@ app.put('/usuarios/:id', (req, res) => {
 
 
 app.delete('/usuarios/:id', (req, res) => {
-
     let id = req.params.id;
+    //Usuario.findByIdAndRemove(id, (err, usuarioEliminado)=> {});
+    Usuario.findByIdAndUpdate(id, { $set: { state: false } }, { new: true }, (err, usuarioEliminado) => {
 
-    res.json(`delete usuario: ${id}`);
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!usuarioEliminado) {
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'Usuario no encontrado'
+                }
+            });
+        }
+
+        res.json({
+            ok: true,
+            usuarioEliminado
+        });
+
+    })
+
 });
 
 
