@@ -1,8 +1,8 @@
+require('./config/config');
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-require('./config/config');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -21,4 +21,4 @@ mongoose.connect(process.env.URLDB, { useNewUrlParser: true }, (err, res) => {
     console.log('Base de datos ONLINE');
 });
 
-app.listen(process.env.PORT, () => console.log('escuchando por el puerto 3000'));
+app.listen(process.env.PORT, () => console.log(`Escuchando por el puerto: ${process.env.PORT}`));
