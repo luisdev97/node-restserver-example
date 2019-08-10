@@ -3,24 +3,23 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 
 const Usuario = require('../models/Usuario');
-const verificaToken = require('../middlewares/authentication');
+const { verificaToken, verifica_Admin_Role } = require('../middlewares/authentication');
 //encriptaremos el password de nuestros usuarios antes de realizar el POST
-
 const app = express();
 
 
 
 app.get('/', (req, res) => {
-    res.json('Hello World');
+    res.json('Welcome to my example REST API in Node.js');
 });
 
 
-
+//Retorna una lista de los usuarios existentes en la base de datos, requiere de login pero no necesita permisos de administrador
 app.get('/usuarios', verificaToken, (req, res) => {
 
     let desde = Number(req.query.desde) || 0;
     let limite = Number(req.query.limite) || 5;
-    //Podemos indicar condiciones en el find {google: true}
+
     Usuario.find({ state: true }, 'nombre email')
         .skip(desde)
         .limit(limite)
@@ -47,8 +46,8 @@ app.get('/usuarios', verificaToken, (req, res) => {
 });
 
 
-
-app.post('/usuarios', verificaToken, (req, res) => {
+//Agrega un usuario a la bd, necesita permisos de administrador
+app.post('/usuarios', [verificaToken, verifica_Admin_Role], (req, res) => {
 
     let { nombre, email, password, role } = req.body;
 
@@ -80,15 +79,15 @@ app.post('/usuarios', verificaToken, (req, res) => {
 
 
 //Para actualizar podemos usar el modelo Usuario y el metodo findById para traernos el usuario y dentro el Usuario.save
-//Otra forma es usar findByIdAndUpdate(id,(err,usuarioDB));
-app.put('/usuarios/:id', verificaToken, (req, res) => {
+//Modifica campos de un usuario, necesita el id para aplicar los cambios a los campos indicados, también requiere de permisos de administrador
+app.put('/usuarios/:id', [verificaToken, verifica_Admin_Role], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
 
     //Para recibir el nuevo documento en lugar del original tras realizar los cambios, para esto pasamos como 3 argumento un objeto que contenga new: true 
     //Para evitar que se actualicen campos indebidos en este momento agregarmos al 3 parametro runValidators : true
     Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, usuarioDB) => {
-
+        //Retorna error si no existe un usuario cuyo id coincida con el indicado
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -106,8 +105,8 @@ app.put('/usuarios/:id', verificaToken, (req, res) => {
 });
 
 
-
-app.delete('/usuarios/:id', verificaToken, (req, res) => {
+//Modifica el state de un usuario para volverlo inactivo, necesita de un id y requiere permisos de administrador
+app.delete('/usuarios/:id', [verificaToken, verifica_Admin_Role], (req, res) => {
     let id = req.params.id;
     //Usuario.findByIdAndRemove(id, (err, usuarioEliminado)=> {});
     Usuario.findByIdAndUpdate(id, { $set: { state: false } }, { new: true }, (err, usuarioEliminado) => {

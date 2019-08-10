@@ -1,3 +1,4 @@
+//Cargamos el archivo que configura las variables de entorno
 require('./config/config');
 
 const express = require('express');
@@ -15,11 +16,9 @@ app.use(bodyParser.json());
 //Configuracion global de rutas
 app.use(require('./routes/index'));
 
+//Cuando vemos el app.use() es un middleware, funciones cada vez que el codigo pase por estas lineas serán ejecutadas
 
-
-//Cuando vemos el app.use() son middleware, funciones cada vez que el codigo pase por estas lineas
-
-
+//Conexion con la base de datos de mongoDB gracias a Mongoose
 mongoose.connect(process.env.URLDB, { useNewUrlParser: true }, (err, res) => {
     if (err) throw err;
     console.log('Base de datos ONLINE');

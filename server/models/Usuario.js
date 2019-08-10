@@ -27,20 +27,20 @@ let usuarioSchema = new Schema({
     img: {
         type: String,
         required: false
-    }, /// no es obligatoria
+    },
     role: {
         type: String,
         default: 'USER_ROLE',
         enum: rolesValidos
-    }, //default: 'USER_ROLE
+    },
     state: {
         type: Boolean,
         default: true
-    }, //Boolean
+    },
     google: {
         type: Boolean,
         default: false
-    } //Boolean
+    }
 
 });
 

@@ -8,6 +8,7 @@ const Usuario = require('../models/Usuario');
 const app = express();
 
 
+//Ruta POST para el login, necesita de un email y el password para el acceso a una cuenta de usuario
 app.post('/login', (req, res) => {
 
     let body = req.body;
@@ -20,7 +21,7 @@ app.post('/login', (req, res) => {
             });
         }
 
-
+        //Retorna error si no se encuentra un usuario con el email indicado
         if (!usuarioDB) {
             return res.status(500).json({
                 ok: false,
@@ -30,7 +31,7 @@ app.post('/login', (req, res) => {
             });
         }
 
-
+        //Retorna error si las contraseñas no coinciden
         if (!bcrypt.compareSync(body.password, usuarioDB.password)) {
             return res.status(400).json({
                 ok: false,
@@ -42,7 +43,6 @@ app.post('/login', (req, res) => {
 
 
         //Generamos el JSON web token antes de enviarlo, mandamos el payload o informacion que queremos guardar en el token, luego viene el secret que sirve para verificar posteriormente que coincide el secret del token con el secret que usamos en el servidor 
-        //expiresIn 60 * 60 equivale a una hora
         let token = jwt.sign({
             usuario: usuarioDB,
         }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
