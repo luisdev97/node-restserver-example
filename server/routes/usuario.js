@@ -1,10 +1,13 @@
 const express = require('express');
-const app = express();
-
-//encriptaremos el password de nuestros usuarios antes de realizar el POST
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
+
 const Usuario = require('../models/Usuario');
+const verificaToken = require('../middlewares/authentication');
+//encriptaremos el password de nuestros usuarios antes de realizar el POST
+
+const app = express();
+
 
 
 app.get('/', (req, res) => {
@@ -13,7 +16,7 @@ app.get('/', (req, res) => {
 
 
 
-app.get('/usuarios', (req, res) => {
+app.get('/usuarios', verificaToken, (req, res) => {
 
     let desde = Number(req.query.desde) || 0;
     let limite = Number(req.query.limite) || 5;
@@ -45,7 +48,7 @@ app.get('/usuarios', (req, res) => {
 
 
 
-app.post('/usuarios', (req, res) => {
+app.post('/usuarios', verificaToken, (req, res) => {
 
     let { nombre, email, password, role } = req.body;
 
@@ -78,7 +81,7 @@ app.post('/usuarios', (req, res) => {
 
 //Para actualizar podemos usar el modelo Usuario y el metodo findById para traernos el usuario y dentro el Usuario.save
 //Otra forma es usar findByIdAndUpdate(id,(err,usuarioDB));
-app.put('/usuarios/:id', (req, res) => {
+app.put('/usuarios/:id', verificaToken, (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
 
@@ -104,7 +107,7 @@ app.put('/usuarios/:id', (req, res) => {
 
 
 
-app.delete('/usuarios/:id', (req, res) => {
+app.delete('/usuarios/:id', verificaToken, (req, res) => {
     let id = req.params.id;
     //Usuario.findByIdAndRemove(id, (err, usuarioEliminado)=> {});
     Usuario.findByIdAndUpdate(id, { $set: { state: false } }, { new: true }, (err, usuarioEliminado) => {

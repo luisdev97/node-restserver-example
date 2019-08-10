@@ -12,8 +12,21 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 
 
 // ============================
+//  Vencimiento del token
+// ============================
+process.env.CADUCIDAD_TOKEN = '1h';
+
+
+// ============================
+//  SEED de autenticación
+// ============================
+process.env.SEED = process.env.SEED || 'this-is-the-dev-seed';
+
+
+// ============================
 //  Base de datos
 // ============================
+
 let urlDB;
 
 //En caso de que el enviroment de la aplicación sea dev se usara MongoDB localmente, si está en producción usara la conexión a nuestra base de datos MongoDB Atlas
