@@ -20,7 +20,7 @@ let verificaToken = (req, res, next) => {
             });
         }
 
-        //en el payload del token tenemos el usuario
+        //en el payload del token tenemos el usuario agregamos, se establece en el req. y podrá ser accedido antes de ejecutar cualquier ruta que pase por el middleware
         req.usuario = decoded.usuario;
         next();
     });
