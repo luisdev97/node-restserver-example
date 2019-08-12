@@ -9,5 +9,5 @@ npm install
 
 Run this command to start application
 ```
-npm server/server-
+npm server/server
 ```
