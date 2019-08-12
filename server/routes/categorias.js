@@ -16,15 +16,20 @@ let Categoria = require('../models/Categoria');
 //Mostrar todas las categorias
 app.get('/categorias', verificaToken, (req, res) => {
 
-    Categoria.find({}, (err, categorias) => {
-        if (err) throw new Error('No se pudieron obtener las categorias');
-        else
-            res.json({
-                ok: true,
-                categorias
-            });
-    });
+    Categoria.find({})
+        .sort('descripcion')
+        .populate('usuario', 'nombre email')
+        .exec((err, categorias) => {
+            if (err) throw new Error('No se pudieron obtener las categorias');
+            else
+                res.json({
+                    ok: true,
+                    categorias
+                });
+        });
 });
+
+
 
 
 
