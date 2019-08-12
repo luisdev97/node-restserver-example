@@ -78,7 +78,6 @@ app.post('/usuarios', [verificaToken, verifica_Admin_Role], (req, res) => {
 
 
 
-//Para actualizar podemos usar el modelo Usuario y el metodo findById para traernos el usuario y dentro el Usuario.save
 //Modifica campos de un usuario, necesita el id para aplicar los cambios a los campos indicados, también requiere de permisos de administrador
 app.put('/usuarios/:id', [verificaToken, verifica_Admin_Role], (req, res) => {
     let id = req.params.id;

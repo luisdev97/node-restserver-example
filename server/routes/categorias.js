@@ -12,15 +12,18 @@ let Categoria = require('../models/Categoria');
 
 
 
-//LISTO
-//Mostrar todas las categorias
+//Mostrar todas las categorias así como algunos datos del usuario que la creo
 app.get('/categorias', verificaToken, (req, res) => {
 
     Categoria.find({})
         .sort('descripcion')
         .populate('usuario', 'nombre email')
         .exec((err, categorias) => {
-            if (err) throw new Error('No se pudieron obtener las categorias');
+            if (err)
+                return res.status(400).json({
+                    ok: false,
+                    err
+                });
             else
                 res.json({
                     ok: true,
@@ -38,12 +41,12 @@ app.get('/categorias', verificaToken, (req, res) => {
 
 
 
-//Muestra una categoria por id, solo la información de la categoría
+//Muestra una categoria cuyo id sea igual al pasado en la url
 app.get('/categorias/:id', verificaToken, (req, res) => {
     let id = req.params.id;
     Categoria.findById(id, (err, categoriaDB) => {
         if (err)
-            res.status(400).json({
+            res.status(500).json({
                 ok: false,
                 err
             });
@@ -58,11 +61,6 @@ app.get('/categorias/:id', verificaToken, (req, res) => {
 
 
 
-
-
-
-
-//LISTO
 //Crea una nueva categoria y la regresa, al crear una nueva categoria tenemos el id del usuario en el token
 app.post('/categorias', verificaToken, (req, res) => {
 
@@ -72,12 +70,18 @@ app.post('/categorias', verificaToken, (req, res) => {
     });
 
     categoria.save((err, categoriaDB) => {
-        if (err) throw new Error(`No se pudo crear la categoria por el siguiente error: \n ${err}`);
-        else
-            res.json({
-                ok: true,
-                categoriaDB
+
+        if (err)
+            return res.status(400).json({
+                ok: false,
+                err
             });
+
+
+        res.json({
+            ok: true,
+            categoriaDB
+        });
     });
 
 });
@@ -85,46 +89,62 @@ app.post('/categorias', verificaToken, (req, res) => {
 
 
 
-
-
-//LISTO
-//Actualizamos solo el nombre/descripcion de la categoría
+//Actualizamos solo la descripcion de la categoría, requiere pasar el id en la url
 app.put('/categorias/:id', verificaToken, (req, res) => {
     let id = req.params.id;
     let body = req.body;
 
     Categoria.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, categoriaDB) => {
-        if (err) throw new Error(`No se pudo actualizar la categoria por el siguiente error: \n ${err}`);
-        else
-            res.json({
-                ok: true,
-                categoriaDB
-            })
+        if (err)
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+
+        if (!categoriaDB)
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'No existe una categoría en la base da datos con ese id'
+                }
+            });
+
+        res.json({
+            ok: true,
+            categoriaDB
+        });
+
     });
 });
 
 
 
 
-
-
-//LISTO
-//Solo un administrador puede borrar categorias
+//Eliminamos una categoría pasando el id en la url, Solo un administrador puede borrar categorias
 app.delete('/categorias/:id', [verificaToken, verifica_Admin_Role], (req, res) => {
     //Categoria.findByIdAndRemove();
     let id = req.params.id;
 
     Categoria.findByIdAndRemove(id, (err, categoriaDB) => {
+
         if (err)
-            return res.status(400).json({
+            return res.status(500).json({
                 ok: false,
                 err
-            })
-        else
-            res.json({
-                ok: true,
-                categoriaDB
             });
+
+        if (!categoriaDB)
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'No existe una categoría en la base da datos con ese id'
+                }
+            });
+
+        res.json({
+            ok: true,
+            categoriaDB
+        });
     });
 
 });
