@@ -2,6 +2,7 @@ const express = require('express');
 const fileUpload = require('express-fileupload');
 
 const Usuario = require('../models/Usuario');
+const Producto = require('../models/Producto');
 
 const app = express();
 
@@ -67,7 +68,7 @@ app.put('/upload/:tipo/:id', (req, res) => {
 
         //Imagen cargada
 
-        imagenUsuario(id, res, nombreArchivo);
+        tipo === 'usuarios' ? imagenUsuario(id, res, nombreArchivo) : imagenProducto(id, res, nombreArchivo);
 
     });
 
@@ -75,10 +76,76 @@ app.put('/upload/:tipo/:id', (req, res) => {
 
 
 
+
+
+
+const imagenProducto = (id, res, nombreArchivo) => {
+
+
+
+    Producto.findById(id, (err, productoDB) => {
+
+        if (err) {
+            borrarArchivo(nombreArchivo, 'productos');
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!productoDB) {
+            borrarArchivo(nombreArchivo, 'productos');
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'El producto no existe por lo que no puede subirse la imagen'
+                }
+            })
+        }
+
+        borrarArchivo(productoDB.img, 'productos')
+
+        productoDB.img = nombreArchivo;
+
+        productoDB.save((err, productoGuardado) => {
+            res.json({
+                ok: true,
+                productoGuardado,
+                img: nombreArchivo
+            })
+        })
+
+
+    });
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const imagenUsuario = (id, res, nombreArchivo) => {
 
     Usuario.findById(id, (err, usuarioDB) => {
-
         if (err) {
 
             borrarArchivo(nombreArchivo, 'usuarios');
@@ -104,7 +171,6 @@ const imagenUsuario = (id, res, nombreArchivo) => {
 
 
         borrarArchivo(usuarioDB.img, 'usuarios');
-        console.log(usuarioDB.img);
 
         usuarioDB.img = nombreArchivo;
 
@@ -121,6 +187,26 @@ const imagenUsuario = (id, res, nombreArchivo) => {
 
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const borrarArchivo = (nombreImagen, tipo) => {
