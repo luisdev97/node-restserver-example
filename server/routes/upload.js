@@ -5,6 +5,8 @@ const Usuario = require('../models/Usuario');
 
 const app = express();
 
+const fs = require('fs'); //necesitamos construir un path para llegar a las imagenes desde las rutas
+const path = require('path');
 
 //default options
 app.use(fileUpload());
@@ -25,7 +27,7 @@ app.put('/upload/:tipo/:id', (req, res) => {
         });
 
 
-    let tiposValidos = ['productos', 'usuario'];
+    let tiposValidos = ['productos', 'usuarios'];
     //Valida el tipo
 
     if (tiposValidos.indexOf(tipo) === -1)
@@ -55,21 +57,79 @@ app.put('/upload/:tipo/:id', (req, res) => {
         });
 
 
-    archivo.mv(`./uploads/${tipo}/${nombreArchivo}.jpg`, err => {
+    archivo.mv(`./uploads/${tipo}/${nombreArchivo}`, err => {
+
         if (err)
             return res.status(500).json({
                 ok: false,
                 err
             });
 
-        res.json({
-            ok: true,
-            message: 'Imagen subida correctamente'
-        });
+        //Imagen cargada
+
+        imagenUsuario(id, res, nombreArchivo);
 
     });
 
 });
+
+
+
+const imagenUsuario = (id, res, nombreArchivo) => {
+
+    Usuario.findById(id, (err, usuarioDB) => {
+
+        if (err) {
+
+            borrarArchivo(nombreArchivo, 'usuarios');
+
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
+
+
+        if (!usuarioDB) {
+
+            borrarArchivo(nombreArchivo, 'usuarios');
+
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'El usuario no existe'
+                }
+            });
+        }
+
+
+        borrarArchivo(usuarioDB.img, 'usuarios');
+        console.log(usuarioDB.img);
+
+        usuarioDB.img = nombreArchivo;
+
+
+
+        usuarioDB.save((err, usuarioGuardado) => {
+
+            res.json({
+                ok: true,
+                usuarioGuardado,
+                img: nombreArchivo
+            });
+        });
+
+    });
+}
+
+
+const borrarArchivo = (nombreImagen, tipo) => {
+
+    let pathImagen = path.resolve(__dirname, `../../uploads/${tipo}/${nombreImagen}`);
+
+    if (fs.existsSync(pathImagen))
+        fs.unlinkSync(pathImagen);
+}
 
 
 module.exports = app;
