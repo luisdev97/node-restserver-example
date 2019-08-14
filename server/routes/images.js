@@ -5,10 +5,10 @@ const fs = require('fs');
 const app = express();
 const path = require('path');
 
-const { verificaToken } = require('../middlewares/authentication');
+const { verificaTokenImg } = require('../middlewares/authentication');
 
 
-app.get('/imagenes/:tipo/:img', (req, res) => {
+app.get('/imagenes/:tipo/:img', verificaTokenImg, (req, res) => {
 
     let { tipo, img } = req.params;
     let pathImagen = path.resolve(__dirname, `../../uploads/${tipo}/${img}`);

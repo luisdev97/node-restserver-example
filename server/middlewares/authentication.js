@@ -25,6 +25,32 @@ let verificaToken = (req, res, next) => {
         next();
     });
 
+};
+
+
+
+// ===================================
+// Verificar Token para las imagenes
+// ===================================
+
+let verificaTokenImg = (req, res, next) => {
+    //con req.get se obitnen los headers de la peticion
+    let token = req.query.token;
+
+    jwt.verify(token, process.env.SEED, (err, decoded) => {
+
+        if (err) {
+            return res.status(401).json({
+                ok: false,
+                err
+            });
+        }
+
+        //en el payload del token tenemos el usuario agregamos, se establece en el req. y podrá ser accedido antes de ejecutar cualquier ruta que pase por el middleware
+        req.usuario = decoded.usuario;
+        next();
+    });
+
 
 };
 
@@ -53,5 +79,6 @@ const verifica_Admin_Role = (req, res, next) => {
 
 module.exports = {
     verificaToken,
-    verifica_Admin_Role
+    verifica_Admin_Role,
+    verificaTokenImg
 }
